@@ -1,0 +1,70 @@
+version: '3.4'
+
+networks:
+  web_net:
+    name: web_net
+    external: true
+
+
+services:
+  traefik:
+    image: traefik:${traefik_image_tag}
+    command:
+      - "--log.level=DEBUG"
+      - "--log.filepath=/log-file.log"
+      - "--log.format=json"
+      - "--api=true"
+      - "--ping=true"
+      - "--accesslog=true"
+      - "--accesslog.bufferingsize=100"
+      - "--api.insecure=true"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web_net"
+      - "--entrypoints.http.address=:80"
+      - "--providers.file.filename=/traefik/config.yml"
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik:/traefik
+    networks:
+      - web_net
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+      - "traefik.http.routers.traefik.entrypoints=http"
+      - "traefik.http.routers.traefik.rule=Host(`${traefik_domain}`)"
+      - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+
+
+  nexus:
+    image: sonatype/nexus3:${nexus_image_tag}
+    container_name: nexus 
+    restart: always
+    volumes:
+      - "/opt/services/nexus/data:/sonatype-work"
+    networks:
+      - web_net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=web_net"
+
+      # Repository HTTP configuration
+      - "traefik.http.routers.repo.entrypoints=http"
+      - "traefik.http.routers.repo.rule=Host(`${registry_domain}`)"
+      - "traefik.http.services.repo.loadbalancer.server.port=8081"
+
+      # Nexus Docker HTTP configuration
+      - "traefik.http.routers.nexusdocker.entrypoints=http"
+      - "traefik.http.routers.nexusdocker.rule=Host(`${docker_main_domain}`)"
+      - "traefik.http.services.nexusdocker.loadbalancer.server.port=8085"
+
+      # Nexus Mirror HTTP configuration
+      - "traefik.http.routers.nexusmirror.entrypoints=http"
+      - "traefik.http.routers.nexusmirror.rule=Host(`${nexus_domain}`)"
+      - "traefik.http.services.nexusmirror.loadbalancer.server.port=8084"
+

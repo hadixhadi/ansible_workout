@@ -1,0 +1,6 @@
+---
+- hosts: all
+  roles:
+    - role: gitlab_setup
+      tags:
+        - gitlab

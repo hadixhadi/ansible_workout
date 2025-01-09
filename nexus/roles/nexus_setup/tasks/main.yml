@@ -1,0 +1,91 @@
+--- 
+
+- name: Install pip on the server
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+  tags:
+    - preparing
+
+
+- name: Create a docker network with name
+  docker_network:
+    name: "{{ item }}"
+    driver_options:
+      com.docker.network.bridge.name: "{{ item }}"
+  loop:
+    - web_net
+  tags:
+    - preparing
+    - docker
+   
+
+- name: Creates nexus directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ nexus_services_dir }}"
+  tags:
+    - preparing
+    - directory
+
+
+- name: Creates treafik directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ traefik_services_dir }}"
+  tags:
+    - preparing
+    - directory
+
+- name: Copy docker compose file with owner and permissions
+  ansible.builtin.copy:
+    src: compose.yml
+    dest: "{{ compose_file_directory }}/compose.yml"
+  tags:
+    - preparing
+    - copy
+    - deploy
+
+- name: Copy traefik config file with owner and permissions
+  ansible.builtin.copy:
+    src: config.yml
+    dest: "{{ traefik_config_file_directory }}/config.yml"
+  tags:
+    - preparing
+    - copy
+    - deploy
+
+
+- name: Copy traefik acme file with owner and permissions
+  ansible.builtin.copy:
+    src: acme.json
+    dest: "{{ traefik_config_file_directory }}/acme.json"
+  tags:
+    - preparing
+    - copy
+    - deploy
+
+- name: Template a file to path
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ compose_file_directory }}/.env"
+  tags:
+    - preparing
+    - copy
+    - deploy
+
+- name: Pull images for project
+  community.docker.docker_compose_v2_pull:
+    project_src: "{{ compose_file_directory }}"
+  tags:
+    - pull
+
+- name: deploy Docker Compose stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_file_directory }}"
+  tags:
+    - deploy

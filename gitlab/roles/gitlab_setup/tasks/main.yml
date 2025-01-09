@@ -1,0 +1,75 @@
+---
+#- name: Copy file
+#  ansible.builtin.copy:
+#    src: pip.conf
+#    dest: /root/.config/pip/pip.conf
+#  tags:
+#    - preparing
+
+- name: Install pip on the server
+  ansible.builtin.package:
+    name: python3-pip
+    state: present
+  tags:
+    - preparing
+
+#
+#- name: Install multi python packages
+#  ansible.builtin.pip:
+#    name:
+#      - docker
+#      - docker-compose
+#    extra_args: --break-system-packages
+#
+#  tags:
+#    - preparing
+#    - docker
+
+- name: Create a docker network with name
+  docker_network:
+    name: "{{ item }}"
+    driver_options:
+      com.docker.network.bridge.name: "{{ item }}"
+  loop:
+    - web_net
+    - app_net
+  tags:
+    - preparing
+    - docker
+   
+
+- name: Creates directory
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ services_dir }}"
+  tags:
+    - preparing
+    - directory
+
+- name: Copy file with owner and permissions
+  ansible.builtin.copy:
+    src: compose.yml
+    dest: "{{ compose_file_directory }}/compose.yml"
+  tags:
+    - preparing
+
+- name: Template a file to path
+  ansible.builtin.template:
+    src: .env.j2
+    dest: "{{ compose_file_directory }}/.env"
+  tags:
+    - preparing
+
+# - name: Pull images for project
+#   community.docker.docker_compose_v2_pull:
+#     project_src: "{{ compose_file_directory }}"
+#   tags:
+#     - pull
+
+- name: deploy Docker Compose stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_file_directory }}"
+  tags:
+    - deploy

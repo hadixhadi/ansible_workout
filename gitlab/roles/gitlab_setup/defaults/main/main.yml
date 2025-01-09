@@ -1,0 +1,15 @@
+---
+
+services_dir: 
+  - "/opt/services/gitlab"
+  - "/opt/services/gitlab/data"
+  - "/opt/services/gitlab/logs"
+  - "/opt/services/gitlab/backups"
+  - "/opt/services/gitlab/config"
+compose_file_directory: "/opt/services/gitlab"
+gitlab_image_tag: 17.7.0-ce.0
+gitlab_root_password: "$$O493!{u?$$"
+
+main_domain: "t.com"
+gitlab_main_domain: "gitlab.{{ main_domain }}"
+gitlab_registry_domain: "reg.{{ main_domain }}"

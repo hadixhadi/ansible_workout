@@ -1,0 +1,51 @@
+version: "3.7"
+
+services:
+  traefik:
+    image: traefik:${traefik_image_tag}
+    container_name: traefik
+    command:
+      - "--api.insecure=true"                
+      - "--log.level=DEBUG"                  
+      - "--providers.docker=true"             
+      - "--entrypoints.http.address=:80" 
+      - "--entrypoints.https.address=:443"   
+      - "--certificatesresolvers.myresolver.acme.tlschallenge=true"
+      - "--certificatesresolvers.myresolver.acme.email=test@example.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/acme.json"   
+    ports:
+      - "80:80"                             
+      - "443:443"                        
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro" 
+      - "./acme.json:/acme.json"
+    networks:
+      - web_net
+    labels:
+      - "traefik.http.routers.api.rule=Host(`${traefik_domain}`)"
+      - "traefik.http.routers.api.service=api@internal"
+      - "traefik.http.routers.api.entrypoints=https"
+      - "traefik.http.routers.api.tls.certresolver=myresolver"
+
+  # nexus:
+  #   image: sonatype/nexus3:${nexus_image_tag}
+  #   container_name: nexus
+  #   labels:
+  #     - "traefik.enable=true"
+  #     - "traefik.http.routers.nexus.rule=Host(`${nexus_domain}`)" 
+  #     - "traefik.http.services.nexus.loadbalancer.server.port=8081" 
+
+  #     - "traefik.http.routers.nexusdocker.entrypoints=http"
+  #     - "traefik.http.routers.nexusdocker.rule=Host(`${docker_main_domain}`)"
+  #     - "traefik.http.services.nexusdocker.loadbalancer.server.port=8085"
+  #   volumes:
+  #     - nexus-data:/nexus-data
+  #   networks:
+  #     - web_net
+
+volumes:
+  nexus-data:
+
+networks:
+  web_net:
+    external: true

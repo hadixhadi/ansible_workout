@@ -1,0 +1,59 @@
+networks:
+  web_net:
+    name: web_net
+    external: true
+  app_net:
+    name: app_net
+    external: true
+
+volumes:
+  gitlab_data:
+    name: gitlab_data
+  gitlab_log:
+    name: gitlab_log
+  gitlab_backup:
+    name: gitlab_backups
+  gitlab_config:
+    name: gitlab_config
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:${image_tag}
+    container_name: gitlab
+    hostname: ${gitlab_domain}
+    restart: ${restart_policy}
+    volumes:
+      - /opt/services/gitlab/data:/var/opt/gitlab
+      - /opt/services/gitlab/logs:/var/log/gitlab
+      - /opt/services/gitlab/backups:/var/opt/gitlab/backups
+      - /opt/services/gitlab/config:/etc/gitlab
+    ports:
+      - '80:80'
+      - '443:443'
+      - '22:22'
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        # Gitlab external domain
+        external_url = 'https://{{ gitlab_main_domain }}'
+
+    networks:
+      - web_net
+      - app_net
+    # labels:
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.http-git.rule=Host(`${gitlab_domain}`)"
+      # - "traefik.http.routers.http-git.entrypoints=web"
+      # - "traefik.http.routers.git.rule=Host(`${gitlab_domain}`)"
+      # - "traefik.http.routers.git.entrypoints=web-secure"
+      # - "traefik.http.routers.git.tls=true"
+      # - "traefik.http.routers.git.tls.certresolver=myresolver"
+      # - "traefik.http.routers.git.service=git"
+      # - "traefik.http.services.git.loadBalancer.server.port=80"
+      # - "traefik.http.routers.http-reg.rule=Host(`${registry_domain}`)"
+      # - "traefik.http.routers.http-reg.entrypoints=web"
+      # - "traefik.http.routers.reg.rule=Host(`${registry_domain}`)"
+      # - "traefik.http.routers.reg.entrypoints=web-secure"
+      # - "traefik.http.routers.reg.tls=true"
+      # - "traefik.http.routers.reg.tls.certresolver=myresolver"
+      # - "traefik.http.routers.reg.service=reg"
+      # - "traefik.http.services.reg.loadBalancer.server.port=5001"

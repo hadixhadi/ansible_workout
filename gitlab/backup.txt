@@ -1,0 +1,56 @@
+ # Gitlab Root Password
+        gitlab_rails['initial_root_password'] = "$$O493!{u?$$"
+        gitlab_rails['display_initial_root_password'] = true
+        gitlab_rails['store_initial_root_password'] = true
+
+        # Gitlab Nginx Config
+        nginx['enable'] = true
+        nginx['client_max_body_size'] = '250m'
+        nginx['redirect_http_to_https'] = false
+        nginx['gzip_enabled'] = true
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        nginx['proxy_protocol'] = false
+
+        # Gitlab ban authentication failed
+        gitlab_rails['rack_attack_git_basic_auth'] = {
+          'enabled' => true,
+          'ip_whitelist' => ["127.0.0.1","192.168.50.0/24"],
+          'maxretry' => 10,
+          'findtime' => 60,
+          'bantime' => 3600
+        }
+
+        # Gitlab Backup Settings
+        gitlab_rails['manage_backup_path'] = true
+        gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
+        gitlab_rails['backup_archive_permissions'] = 0644
+        gitlab_rails['backup_keep_time'] = 604800
+        gitlab_rails['env'] = {
+            "SKIP" => "registry"
+        }
+        # gitlab_rails['backup_upload_connection'] = {
+        #   'provider' => 'AWS',
+        #   'region' => 'eu-west-1',
+        #    'endpoint' => 'https://min.rahbia.mecan.ir',
+        #   'aws_access_key_id' => 'AKIAKIAKI',
+        #   'aws_secret_access_key' => 'secret123',
+        #   'use_iam_profile' => false
+        # }
+        # gitlab_rails['backup_upload_remote_directory'] = 'gitlab-backup'
+        # gitlab_rails['backup_multipart_chunk_size'] = 104857600
+
+        # Gitlab disable unused services
+        node_exporter['enable'] = false
+        redis_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        pgbouncer_exporter['enable'] = false
+        gitlab_exporter['enable'] = false
+        letsencrypt['enable'] = false
+        prometheus['enable'] = false
+        monitoring_role['enable'] = false
+        alertmanager['enable'] = false
+
+
+
+07bTANRR6hDkKa3GziRVf3LCizu7lhGPKHaL+KYmW1A=

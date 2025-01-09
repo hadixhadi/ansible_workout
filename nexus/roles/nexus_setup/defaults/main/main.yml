@@ -1,0 +1,21 @@
+---
+
+nexus_services_dir: 
+  - "/opt/services/nexus"
+  - "/opt/services/nexus/data"
+
+traefik_services_dir:
+  - /opt/services/traefik
+
+
+
+compose_file_directory: "/opt/services/nexus"
+traefik_config_file_directory: "/opt/services/traefik"
+nexus_image_tag: 3.68.1
+traefik_image_tag: v2.4.8
+
+main_domain: "t.com"
+traefik_domain: "traefik.{{ main_domain }}"
+docker_main_domain: "docker.{{ main_domain }}"
+nexus_registry_domain: "reg.{{ main_domain }}"
+nexus_domain: "nexus.{{ main_domain }}"
