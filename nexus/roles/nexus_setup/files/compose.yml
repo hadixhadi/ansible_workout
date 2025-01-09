@@ -26,7 +26,8 @@ services:
       - "traefik.http.routers.api.service=api@internal"
       - "traefik.http.routers.api.entrypoints=https"
       - "traefik.http.routers.api.tls.certresolver=myresolver"
-
+      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$KgleTQnt$$cs/JcgT5jFDHwhPHXNXkB1"
+      - "traefik.http.routers.api.middlewares=auth"
   nexus:
     image: sonatype/nexus3:${nexus_image_tag}
     container_name: nexus
